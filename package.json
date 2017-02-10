@@ -9,7 +9,6 @@
   "scripts": {
   "start": "index.js",
   "test": "mocha",
-  "postinstall": "bower install && grunt build"
   }
 
 }
