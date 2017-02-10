@@ -1,5 +1,8 @@
 var express = require('express');
 var app = express();
+var pg = require('pg');
+
+var connectionString = 'process.env.USER_DB_URL';
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -7,6 +10,7 @@ app.use(express.static(__dirname + '/public'));
 
 
 app.get('/', function(request, response) {
+  pg.connect(connectionString, onConnect);
   response.send('Hola  mundo');
 });
 
@@ -16,17 +20,16 @@ app.listen(app.get('port'), function() {
 });
 
 
-var pg = require('pg');
+function onConnect(err, client, done) {
+  //Err - This means something went wrong connecting to the database.
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+    client.query('SELECT table_schema,table_name FROM information_schema.tables;').on('row', function(row) {
+      response.send(JSON.stringify(row));
+    })
 
-pg.defaults.ssl = true;
-pg.connect(process.env.USERS_DB_URL, function(err, client) {
-  if (err) throw err;
-  console.log('Connected to postgres! Getting schemas...');
-
-  client
-    .query('SELECT * FROM employees;')
-    .on('row', function(row) {
-      console.log(JSON.stringify(row));
-    });
-});
-
+  //For now let's end client
+  client.end();
+}
